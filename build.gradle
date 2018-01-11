@@ -25,6 +25,14 @@ subprojects { subproject ->
 				url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
 			}
 
+			maven {
+				credentials {
+					username "$nexusUsername"
+					password "$nexusPassword"
+				}
+				url "https://repository.liferay.com/nexus/content/repositories/xanadu/"
+			}
+
 			mavenLocal()
 		}
 	}
