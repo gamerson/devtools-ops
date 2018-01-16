@@ -10,6 +10,60 @@ buildscript {
 	}
 }
 
+apply plugin: 'eclipse'
+apply plugin: 'io.spring.dependency-management'
+
+configurations {
+	targetPlatform
+}
+
+eclipse {
+	project {
+		natures 'org.eclipse.jdt.core.javanature'
+	}
+	classpath {
+    		plusConfigurations += [ configurations.targetPlatform ]
+	}
+}
+
+repositories {
+	maven {
+		url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+	}
+
+	maven {
+		credentials {
+			username "$nexusUsername"
+			password "$nexusPassword"
+		}
+
+		url "https://repository.liferay.com/nexus/content/repositories/xanadu/"
+	}
+
+	mavenLocal()
+}
+
+dependencyManagement {
+	imports {
+		mavenBom(rootProject.properties["liferay.workspace.target.platform"])
+	}
+}
+
+dependencyManagement.managedVersions.each {
+	def groupId = it.key.split(':')[0]
+	def artifactId = it.key.split(':')[1]
+	def version = it.value
+
+	if (groupId.startsWith("com.liferay")) {
+		//dependencies.add('targetPlatform', "${groupId}:${artifactId}:${version}", { transitive = false })
+	}
+
+}
+
+dependencies.add('targetPlatform', "javax.portlet:portlet-api:2.0", { transitive = false })
+dependencies.add('targetPlatform', "org.osgi:osgi.core:6.0.0", { transitive = false })
+dependencies.add('targetPlatform', "org.osgi:osgi.cmpn:6.0.0", { transitive = false })
+
 subprojects { subproject ->
 	subproject.plugins.withId('java') {
 		subproject.apply plugin: "io.spring.dependency-management"
@@ -30,6 +84,7 @@ subprojects { subproject ->
 					username "$nexusUsername"
 					password "$nexusPassword"
 				}
+
 				url "https://repository.liferay.com/nexus/content/repositories/xanadu/"
 			}
 

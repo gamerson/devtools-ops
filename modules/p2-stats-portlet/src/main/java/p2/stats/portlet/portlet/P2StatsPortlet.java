@@ -2,10 +2,13 @@ package p2.stats.portlet.portlet;
 
 import p2.stats.portlet.constants.P2StatsPortletKeys;
 
+import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
+import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.portlet.Portlet;
 import javax.portlet.PortletException;
@@ -38,12 +41,19 @@ public class P2StatsPortlet extends MVCPortlet {
 	public void doView(RenderRequest renderRequest, RenderResponse renderResponse)
 			throws IOException, PortletException {
 
-		userLocalService.getUsersCount();
+		int users = userLocalService.getUsersCount();
+		System.out.println(users);
+
+		List<Layout> layouts = layoutLocalService.getLayouts(-1, -1);
+		System.out.println(layouts);
 
 		super.doView(renderRequest, renderResponse);
 
 
 	}
+
+	@Reference
+	LayoutLocalService layoutLocalService;
 
 	@Reference
 	UserLocalService userLocalService;
