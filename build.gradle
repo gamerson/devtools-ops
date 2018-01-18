@@ -10,6 +10,7 @@ buildscript {
 	}
 }
 
+apply plugin: 'java-base'
 apply plugin: 'eclipse'
 apply plugin: 'io.spring.dependency-management'
 
@@ -22,7 +23,7 @@ eclipse {
 		natures 'org.eclipse.jdt.core.javanature'
 	}
 	classpath {
-    		plusConfigurations += [ configurations.targetPlatform ]
+		plusConfigurations += [ configurations.targetPlatform ]
 	}
 }
 
@@ -43,26 +44,26 @@ repositories {
 	mavenLocal()
 }
 
-dependencyManagement {
-	imports {
-		mavenBom(rootProject.properties["liferay.workspace.target.platform"])
+def poms = []
+poms << new io.spring.gradle.dependencymanagement.internal.pom.PomReference(new io.spring.gradle.dependencymanagement.internal.pom.Coordinates("com.liferay.releases.ce","com.liferay.releases.ce.release","7.1.0"))
+
+dependencyManagement.pomConfigurer.dependencyManagement.pomResolver.resolvePomsLeniently(poms).each {
+	it.managedDependencies.each { dep ->
+		if (dep.type == "jar") {
+			def gav = dep.coordinates
+			dependencies.add('targetPlatform', "${gav.groupId}:${gav.artifactId}:${gav.version}", {transitive = false})
+		}
 	}
 }
 
-dependencyManagement.managedVersions.each {
-	def groupId = it.key.split(':')[0]
-	def artifactId = it.key.split(':')[1]
-	def version = it.value
 
-	if (groupId.startsWith("com.liferay")) {
-		//dependencies.add('targetPlatform', "${groupId}:${artifactId}:${version}", { transitive = false })
-	}
-
-}
 
 dependencies.add('targetPlatform', "javax.portlet:portlet-api:2.0", { transitive = false })
 dependencies.add('targetPlatform', "org.osgi:osgi.core:6.0.0", { transitive = false })
 dependencies.add('targetPlatform', "org.osgi:osgi.cmpn:6.0.0", { transitive = false })
+dependencies.add('targetPlatform', "javax.portlet:portlet-api:2.0", {transitive = false})
+dependencies.add('targetPlatform', "javax.servlet:javax.servlet-api:3.0.1", {transitive = false})
+dependencies.add('targetPlatform', "javax.servlet.jsp.jstl:jstl-api:1.2", {transitive = false})
 
 subprojects { subproject ->
 	subproject.plugins.withId('java') {
@@ -71,6 +72,14 @@ subprojects { subproject ->
 		subproject.dependencyManagement {
 			imports {
 				mavenBom(subproject.rootProject.properties["liferay.workspace.target.platform"])
+			}
+			dependencies {
+				dependency "javax.portlet:portlet-api:2.0"
+				dependency "org.osgi:osgi.core:6.0.0"
+				dependency "org.osgi:osgi.cmpn:6.0.0"
+				dependency "javax.portlet:portlet-api:2.0"
+				dependency "javax.servlet:javax.servlet-api:3.0.1"
+				dependency "javax.servlet.jsp.jstl:jstl-api:1.2"
 			}
 		}
 
