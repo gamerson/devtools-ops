@@ -2,6 +2,8 @@ package p2.stats.portlet.portlet;
 
 import p2.stats.portlet.constants.P2StatsPortletKeys;
 
+import com.liferay.journal.model.JournalArticle;
+import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.service.LayoutLocalService;
@@ -47,10 +49,16 @@ public class P2StatsPortlet extends MVCPortlet {
 		List<Layout> layouts = layoutLocalService.getLayouts(-1, -1);
 		System.out.println(layouts);
 
+		List<JournalArticle> articles = journalArticleLocalService.getArticles();
+		System.out.println(articles);
+
 		super.doView(renderRequest, renderResponse);
 
 
 	}
+
+	@Reference
+	JournalArticleLocalService journalArticleLocalService;
 
 	@Reference
 	LayoutLocalService layoutLocalService;

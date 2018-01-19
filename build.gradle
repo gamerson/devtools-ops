@@ -76,12 +76,12 @@ Set<Project> bundleProjects = subprojects.findAll {
 
 task validateBundles(type: Resolve) {
 	dependsOn bundleProjects.collect { "${it.path}:jar" }
+
 	bndrun { "bundles-validation.bndrun" }
+
 	bundles {
 		bundleProjects.collect {
-			def f = it.configurations.archives.artifacts.file
-			println f
-			f
+			it.configurations.archives.artifacts.file
 		}
 	}
 }

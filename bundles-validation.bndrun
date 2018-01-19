@@ -9,7 +9,7 @@
 -plugin.distro=\
 	aQute.bnd.repository.maven.pom.provider.BndPomRepository;\
 		releaseUrls=https://repository.liferay.com/nexus/content/repositories/xanadu/;\
-		pom=${.}/pom.xml;\
+		pom=${.}/distro.xml;\
 		name=distro
 
 -runrequires: \
