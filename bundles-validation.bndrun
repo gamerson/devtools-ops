@@ -1,0 +1,20 @@
+-standalone:
+-resourceonly: true
+-resolve.effective: resolve, active
+
+#-distro: ${.}/com.liferay.releases.ce.distro.jar;version=file
+-distro: com.liferay.releases.ce:com.liferay.releases.ce.distro;versio=7.1.0
+-include: ${.}/services.bnd
+
+-plugin.distro=\
+	aQute.bnd.repository.maven.pom.provider.BndPomRepository;\
+		releaseUrls=https://repository.liferay.com/nexus/content/repositories/xanadu/;\
+		pom=${.}/pom.xml;\
+		name=distro
+
+-runrequires: \
+    osgi.identity;filter:='(osgi.identity=p2.stats)',\
+    osgi.identity;filter:='(osgi.identity=p2.stats.portlet)'
+-runbundles: \
+	p2.stats;version='[1.0.0,1.0.1)',\
+	p2.stats.portlet;version='[1.0.0,1.0.1)'

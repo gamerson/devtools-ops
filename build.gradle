@@ -1,6 +1,11 @@
+import aQute.bnd.gradle.Resolve
+import io.spring.gradle.dependencymanagement.internal.pom.PomReference
+import io.spring.gradle.dependencymanagement.internal.pom.Coordinates
+
 buildscript {
 	dependencies {
 		classpath group: "io.spring.gradle", name: "dependency-management-plugin", version: "1.0.4.RELEASE"
+		classpath group: "biz.aQute.bnd", name: "biz.aQute.bnd.gradle", version: "3.5.0"
 	}
 
 	repositories {
@@ -13,6 +18,7 @@ buildscript {
 apply plugin: 'java-base'
 apply plugin: 'eclipse'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'biz.aQute.bnd.builder'
 
 configurations {
 	targetPlatform
@@ -44,26 +50,41 @@ repositories {
 	mavenLocal()
 }
 
-def poms = []
-poms << new io.spring.gradle.dependencymanagement.internal.pom.PomReference(new io.spring.gradle.dependencymanagement.internal.pom.Coordinates("com.liferay.releases.ce","com.liferay.releases.ce.release","7.1.0"))
+def poms = [new PomReference(new Coordinates("com.liferay.releases.ce","com.liferay.releases.ce.release","7.1.0"))]
 
 dependencyManagement.pomConfigurer.dependencyManagement.pomResolver.resolvePomsLeniently(poms).each {
 	it.managedDependencies.each { dep ->
-		if (dep.type == "jar") {
+		if (dep.type == "jar" && dep.coordinates.groupId.startsWith("com.liferay")) {
 			def gav = dep.coordinates
 			dependencies.add('targetPlatform', "${gav.groupId}:${gav.artifactId}:${gav.version}", {transitive = false})
 		}
 	}
 }
 
+dependencies.add('targetPlatform', 'javax.portlet:portlet-api:2.0', { transitive = false })
+dependencies.add('targetPlatform', 'org.osgi:osgi.core:6.0.0', { transitive = false })
+dependencies.add('targetPlatform', 'org.osgi:osgi.cmpn:6.0.0', { transitive = false })
+dependencies.add('targetPlatform', 'javax.portlet:portlet-api:2.0', {transitive = false})
+dependencies.add('targetPlatform', 'javax.servlet:javax.servlet-api:3.0.1', {transitive = false})
+dependencies.add('targetPlatform', 'javax.servlet.jsp.jstl:jstl-api:1.2', {transitive = false})
 
 
-dependencies.add('targetPlatform', "javax.portlet:portlet-api:2.0", { transitive = false })
-dependencies.add('targetPlatform', "org.osgi:osgi.core:6.0.0", { transitive = false })
-dependencies.add('targetPlatform', "org.osgi:osgi.cmpn:6.0.0", { transitive = false })
-dependencies.add('targetPlatform', "javax.portlet:portlet-api:2.0", {transitive = false})
-dependencies.add('targetPlatform', "javax.servlet:javax.servlet-api:3.0.1", {transitive = false})
-dependencies.add('targetPlatform', "javax.servlet.jsp.jstl:jstl-api:1.2", {transitive = false})
+Set<Project> bundleProjects = subprojects.findAll {
+	it.file('bnd.bnd').exists()
+}
+
+
+task validateBundles(type: Resolve) {
+	dependsOn bundleProjects.collect { "${it.path}:jar" }
+	bndrun { "bundles-validation.bndrun" }
+	bundles {
+		bundleProjects.collect {
+			def f = it.configurations.archives.artifacts.file
+			println f
+			f
+		}
+	}
+}
 
 subprojects { subproject ->
 	subproject.plugins.withId('java') {
