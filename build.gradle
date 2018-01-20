@@ -101,6 +101,7 @@ task setupResolve {
 			writer.write '  aQute.bnd.repository.maven.pom.provider.BndPomRepository;\\\n'
 			writer.write '    releaseUrls=https://repository.liferay.com/nexus/content/repositories/xanadu/;\\\n'
 			writer.write "    pom=\"${buildDir}/distro.xml\";\\\n"
+			writer.write "    location=\"${buildDir}/pom-distro.xml\";\\\n"
 			writer.write '    name=distro\n'
 			writer.write '-runrequires:\\\n'
 			bundleProjects.each {
