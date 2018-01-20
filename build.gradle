@@ -1,4 +1,5 @@
 import aQute.bnd.gradle.Resolve
+import aQute.bnd.osgi.Domain
 import io.spring.gradle.dependencymanagement.internal.pom.PomReference
 import io.spring.gradle.dependencymanagement.internal.pom.Coordinates
 
@@ -73,11 +74,52 @@ Set<Project> bundleProjects = subprojects.findAll {
 	it.file('bnd.bnd').exists()
 }
 
+task setupResolve {
+	doFirst {
+		new File("${buildDir}/distro.xml").withWriter('UTF-8') { writer ->
+			writer.write "<?xml version='1.0' encoding='UTF-8'?>"
+			writer.write '<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">\n'
+			writer.write '  <modelVersion>4.0.0</modelVersion>\n'
+			writer.write '  <artifactId>distro</artifactId>\n'
+			writer.write '  <dependencies>\n'
+			writer.write '    <dependency>\n'
+			writer.write '      <groupId>com.liferay.releases.ce</groupId>\n'
+			writer.write '      <artifactId>com.liferay.releases.ce.distro</artifactId>\n'
+			writer.write '      <version>7.1.0</version>\n'
+			writer.write '    </dependency>\n'
+			writer.write '  </dependencies>\n'
+			writer.write '</project>'
+		}
 
-task validateBundles(type: Resolve) {
-	dependsOn bundleProjects.collect { "${it.path}:jar" }
+		new File("${buildDir}/resolve.bndrun").withWriter('UTF-8') { writer ->
+			writer.write '-standalone:\n'
+			writer.write '-resourceonly: true\n'
+			writer.write '-resolve.effective: resolve, active\n'
+			writer.write '-distro: com.liferay.releases.ce.distro\n'
+			writer.write "-include: \"${projectDir}/services.bnd\"\n"
+			writer.write '-plugin.distro=\\\n'
+			writer.write '  aQute.bnd.repository.maven.pom.provider.BndPomRepository;\\\n'
+			writer.write '    releaseUrls=https://repository.liferay.com/nexus/content/repositories/xanadu/;\\\n'
+			writer.write "    pom=\"${buildDir}/distro.xml\";\\\n"
+			writer.write '    name=distro\n'
+			writer.write '-runrequires:\\\n'
+			bundleProjects.each {
+				Domain jar = Domain.domain(it.jar.archivePath)
+				writer.write "  osgi.identity;filter:='(osgi.identity=" + jar.bundleSymbolicName.key + ")'"
+				if (it != bundleProjects.last()) {
+					writer.write ",\\\n"
+				}
+			}
+		}
+	}
+}
 
-	bndrun { "bundles-validation.bndrun" }
+task resolve(type: Resolve) {
+	dependsOn setupResolve, {
+		bundleProjects.collect { "${it.path}:jar" }
+	}
+
+	bndrun = "${buildDir}/resolve.bndrun"
 
 	bundles {
 		bundleProjects.collect {
