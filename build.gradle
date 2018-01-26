@@ -95,14 +95,15 @@ task setupResolve {
 			writer.write '-standalone:\n'
 			writer.write '-resourceonly: true\n'
 			writer.write '-resolve.effective: resolve, active\n'
-			writer.write '-distro: com.liferay.releases.ce.distro\n'
-			writer.write "-include: \"${projectDir}/services.bnd\"\n"
-			writer.write '-plugin.distro=\\\n'
-			writer.write '  aQute.bnd.repository.maven.pom.provider.BndPomRepository;\\\n'
-			writer.write '    releaseUrls=https://repository.liferay.com/nexus/content/repositories/xanadu/;\\\n'
-			writer.write "    pom=\"${buildDir}/distro.xml\";\\\n"
-			writer.write "    location=\"${buildDir}/pom-distro.xml\";\\\n"
-			writer.write '    name=distro\n'
+			//writer.write '-distro: com.liferay.releases.ce.distro\n'
+			writer.write '-distro: ${.}/../distro.jar;version=file\n'
+			//writer.write "-include: \"${projectDir}/services.bnd\"\n"
+			//writer.write '-plugin.distro=\\\n'
+			//writer.write '  aQute.bnd.repository.maven.pom.provider.BndPomRepository;\\\n'
+			//writer.write '    releaseUrls=https://repository.liferay.com/nexus/content/repositories/xanadu/;\\\n'
+			//writer.write "    pom=\"${buildDir}/distro.xml\";\\\n"
+			//writer.write "    location=\"${buildDir}/pom-distro.xml\";\\\n"
+			//writer.write '    name=distro\n'
 			writer.write '-runrequires:\\\n'
 			bundleProjects.each {
 				Domain jar = Domain.domain(it.jar.archivePath)
